@@ -266,36 +266,7 @@ int LinuxParser::RunningProcesses() {
   return running;
 }
 
-// TODO: Read and return the command associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Command(int pid) {
-  string filename{kProcDirectory + to_string(pid) + kCmdlineFilename};
-  string line{}, command{};
 
-  std::ifstream stream(filename);
-
-  if (!stream.is_open()) {
-    perror(("error while opening the file " + filename).c_str());
-  }
-
-  while (std::getline(stream, line)) {
-    std::istringstream buf(line);
-    std::istream_iterator<string> beg(buf), end;
-    vector<string> values(beg, end);
-
-    for (const std::string& v : values) {
-      std::cout << v << " ";
-      command = command + v;
-    }
-  }
-
-  if (stream.bad()) {
-    perror(("error while reading file " + filename).c_str());
-    stream.close();
-  }
-
-  return command;
-}
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
