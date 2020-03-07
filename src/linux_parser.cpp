@@ -56,8 +56,8 @@ string LinuxParser::Kernel() {
 // BONUS: Update this to use std::filesystem
 vector<int> LinuxParser::Pids() {
   vector<int> pids;
-  DIR* directory = opendir(kProcDirectory.c_str());
-  struct dirent* file;
+  DIR *directory = opendir(kProcDirectory.c_str());
+  struct dirent *file;
   while ((file = readdir(directory)) != nullptr) {
     // Is this a directory?
 
@@ -161,7 +161,7 @@ long LinuxParser::ActiveJiffies() {
   long jiffies{};
   values.erase(values.begin() + kIdle_, values.begin() + kIOwait_ + 1);
 
-  for (const auto& v : values) {
+  for (const auto &v : values) {
     jiffies = jiffies + stol(v);
   }
   return jiffies;
@@ -295,13 +295,10 @@ string LinuxParser::Command(int pid) {
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid [[maybe_unused]]) { return string(); }
-
-// TODO: Read and return the user ID associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Uid(int pid) {
-  string filename = kProcDirectory + to_string(pid) + "/";
-  string line, uid;
+string LinuxParser::Ram(int pid) {
+  string filename{kProcDirectory + to_string(pid) + kStatusFilename};
+  string line;
+  int r{};
 
   std::ifstream stream(filename);
 
@@ -314,8 +311,8 @@ string LinuxParser::Uid(int pid) {
     std::istream_iterator<string> beg(buf), end;
     vector<string> values(beg, end);
 
-    if (values[0] == "Uid:") {
-      uid = values[1];
+    if (values[0] == "VmSize:") {
+      r = stoi(values[1]) / 1000;
     }
   }
 
@@ -323,12 +320,14 @@ string LinuxParser::Uid(int pid) {
     perror(("error while reading file " + filename).c_str());
     stream.close();
   }
-  return uid;
+
+  return to_string(r);
 }
 
-// TODO: Read and return the user associated with a process
+// TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::User(int pid) {
+string LinuxParser::Uid(int pid) {
+
   string filename = kProcDirectory + to_string(pid) + kStatusFilename;
   string line, user;
 
@@ -352,7 +351,45 @@ string LinuxParser::User(int pid) {
     perror(("error while reading file " + filename).c_str());
     stream.close();
   }
+
   return user;
+}
+
+// TODO: Read and return the user associated with a process
+// REMOVE: [[maybe_unused]] once you define the function
+string LinuxParser::User(int pid) {
+
+  std::string uid {Uid(pid)};
+
+  string filename {kPasswordPath};
+  string line, user, result;
+
+  std::ifstream stream(filename);
+  std::string token{};
+  if (!stream.is_open()) {
+    perror(("error while opening the file " + filename).c_str());
+  }
+  while (getline(stream, line)) {
+    std::istringstream buf(line);
+    std::istream_iterator<string> beg(buf), end;
+    vector<string> values(beg, end);
+  
+    std::string p = ":";
+    std::string findUid = p + uid + p;
+    int pPosition = values[0].find_first_of(findUid);
+    
+    if (values[0].find_first_of(findUid) != std::string::npos) {
+        result = values[0].substr(0, pPosition);
+        break;
+    } 
+  }
+
+  if (stream.bad()) {
+    perror(("error while reading file " + filename).c_str());
+    stream.close();
+  }
+
+  return result;
 }
 
 // TODO: Read and return the uptime of a process
@@ -378,6 +415,7 @@ long LinuxParser::UpTime(int pid) {
     perror(("error while reading file " + filename).c_str());
     stream.close();
   }
- 
-  return stol(startTime) / sysconf(_SC_CLK_TCK);;
+
+  return stol(startTime) / sysconf(_SC_CLK_TCK);
+  
 }
