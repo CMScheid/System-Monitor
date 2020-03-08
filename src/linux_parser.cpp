@@ -166,33 +166,36 @@ long LinuxParser::Jiffies() {
 }
 
 // TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid) { 
+long LinuxParser::ActiveJiffies(int pid) {
   string filename{kProcDirectory + to_string(pid) + kStatFilename};
   string line{};
-  
+
   std::ifstream stream(filename);
 
   if (!stream.is_open()) {
     perror(("error while opening the file " + filename).c_str());
   }
 
+  long cpuUsage{};
   while (getline(stream, line)) {
     std::istringstream buf(line);
     std::istream_iterator<string> beg(buf), end;
     vector<string> values(beg, end);
-    long uTime = stol(values[13]); // CPU time spent in user code, measured in clock ticks
-    long sTime = stol(values[14]); // CPU time spent in kernel code, measured in clock ticks
-    long cuTime = stol(values[15]); // Waited-for children's CPU time spent in user code (in clock ticks)
-    long csTime = stol(values[16]); // Waited-for children's CPU time spent in kernel code (in clock ticks)
-    long startTime = stol(values[21]); // Time when the process started, measured in clock ticks
+    long uTime = stol(
+        values[13]); // CPU time spent in user code, measured in clock ticks
+    long sTime = stol(
+        values[14]); // CPU time spent in kernel code, measured in clock ticks
+    long cuTime = stol(values[15]); // Waited-for children's CPU time spent in
+                                    // user code (in clock ticks)
+    long csTime = stol(values[16]); // Waited-for children's CPU time spent in
+                                    // kernel code (in clock ticks)
+    long startTime = stol(
+        values[21]); // Time when the process started, measured in clock ticks
+    long hertz{sysconf(_SC_CLK_TCK)};
 
     long totalTime = uTime + sTime + cuTime + csTime;
-
-    long seconds = UpTime() - (startTime / sysconf(_SC_CLK_TCK));
-    return (totalTime / sysconf(_SC_CLK_TCK) / seconds;
-
-
+    long seconds = UpTime() - (startTime / hertz);
+    cpuUsage = 100 * (totalTime / hertz) / seconds;
   }
 
   if (stream.bad()) {
@@ -200,11 +203,8 @@ long LinuxParser::ActiveJiffies(int pid) {
     stream.close();
   }
 
-  return
-
-
-  
-  return 0; }
+  return cpuUsage;
+}
 
 // TODO: Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies() {

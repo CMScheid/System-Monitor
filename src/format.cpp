@@ -13,7 +13,9 @@ string Format::ElapsedTime(long time_target) {
   const int ONE_HOUR = (60 * 60);
   const int ONE_MINUTE = 60;
 
-  long hour, min, sec;
+  long hour{};
+  long min{};
+  long sec{};
 
   hour = time_target / ONE_HOUR;
 
