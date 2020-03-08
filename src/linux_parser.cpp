@@ -205,7 +205,7 @@ float LinuxParser::ActiveJiffies(int pid) {
 
 // TODO: Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies() {
-  std::vector<string> values{LinuxParser::CpuUtilization()};
+  vector<string> values{LinuxParser::CpuUtilization()};
   values.erase(values.begin() + kIdle_, values.begin() + kIOwait_ + 1);
 
   long jiffies{};
@@ -217,7 +217,7 @@ long LinuxParser::ActiveJiffies() {
 
 // TODO: Read and return the number of idle jiffies for the system
 long LinuxParser::IdleJiffies() {
-  std::vector<string> values{LinuxParser::CpuUtilization()};
+  vector<string> values{LinuxParser::CpuUtilization()};
   long idle{};
   long iowait{};
   idle = stol(values[kIdle_]);
@@ -250,7 +250,7 @@ vector<string> LinuxParser::CpuUtilization() {
     perror(("error while reading file " + filename).c_str());
     stream.close();
   }
-  return std::vector<string>{"not found"};
+  return vector<string>{"not found"};
 }
 
 // TODO: Read and return the total number of processes
