@@ -12,6 +12,7 @@ class Process {
  public:
     Process(int pid) {
         this->pid = pid;
+        ram_util = stoi(Ram());
     }
 
   int Pid();                               // TODO: See src/process.cpp
@@ -25,6 +26,7 @@ class Process {
   // TODO: Declare any necessary private members
  private:
      int pid;
+     int ram_util;
 };
 
 #endif

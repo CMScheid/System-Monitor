@@ -1,15 +1,13 @@
 #include "../include/system.h"
-
 #include <unistd.h>
-
 #include <cstddef>
 #include <set>
 #include <string>
 #include <vector>
-
 #include "../include/linux_parser.h"
 #include "../include/process.h"
 #include "../include/processor.h"
+#include <iostream>
 
 using std::set;
 using std::size_t;
@@ -29,7 +27,11 @@ vector<Process>& System::Processes() {
         Process process(v);
         processes_.emplace_back(process);
     }
-    return processes_; 
+
+    std::sort(processes_.begin(), processes_.end(),[](Process& p1, Process& p2){ 
+        return (p1<p2);});
+    
+    return processes_;
 }
 
 // TODO: Return the system's kernel identifier (string)
